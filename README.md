@@ -35,6 +35,7 @@ Port Group: Any
 Under Advanced: select Match State Established and Match State Related
 
 - Drop invalid state connections
+
 Type: LAN in
 Description: Drop invalid state
 Action: Drop
@@ -47,6 +48,7 @@ Port Group: Any
 Under Advanced: select Match State Invalid
 
 - Allow  main VLAN to access all VLANs
+
 Type: LAN in
 Description: Allow main VLAN access to all VLAN
 Action: Accept
