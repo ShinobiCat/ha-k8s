@@ -1,15 +1,14 @@
 # lslworld
 
-
-- VLAN 10: guest voor het gastennetwerk
-- VLAN 20: trust voor mijn vertrouwde apparaten
+- VLAN 10: gst voor het gastennetwerk
+- VLAN 20: int voor mijn vertrouwde apparaten
 - VLAN 30: iot voor camera' s, deurbel etc..
 - VLAN 40: app voor applicatie servers
-- VLAN 50: db voor database servers
+- VLAN 50: dbs voor database servers
 - VLAN 60: ext voor externe communicatie
 - VLAN 70: nas voor mijn nas fileserver
 - VLAN 80: pve voor mijn proxmox host
-- VLAN 90: mgmt voor admins
+- VLAN 90: adm voor admins
 - VLAN 100: dns voor mijn pi-hole dns server
 
 Hier zijn enkele algemene firewallregels voor elk VLAN om de beveiliging te verbeteren:
