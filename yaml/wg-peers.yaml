@@ -6,7 +6,7 @@ metadata:
 spec:
   allowedIPs:
   - 172.16.16.16/32
-  publicKey: VFH3aQQ/X63aR3B+w0gCSxDyuXeAU2YQqbrbrM>
+  publicKey: VFH3aQQ/X63aR3B+w0gCSxDyuXeAU2YQqbrbrMnAC14=
   persistentKeepalive: 10
 ---
 apiVersion: kilo.squat.ai/v1alpha1
@@ -16,7 +16,7 @@ metadata:
 spec:
   allowedIPs:
   - 172.16.16.32/32
-  publicKey: qDVFBCM88Zey2PFeyOI0BFf+H1gJJYSqmEqVOC>
+  publicKey: qDVFBCM88Zey2PFeyOI0BFf+H1gJJYSqmEqVOCI/PnE=
   persistentKeepalive: 10
 ---
 apiVersion: kilo.squat.ai/v1alpha1
@@ -26,5 +26,5 @@ metadata:
 spec:
   allowedIPs:
   - 172.16.16.48/32
-  publicKey: kWuKpyGVgf5saFJcBBraYByzEXnfL/z/LDiiN1>
+  publicKey: kWuKpyGVgf5saFJcBBraYByzEXnfL/z/LDiiN1Jrp3A=
   persistentKeepalive: 10
