@@ -1,0 +1,30 @@
+---
+apiVersion: kilo.squat.ai/v1alpha1
+kind: Peer
+metadata:
+  name: yan
+spec:
+  allowedIPs:
+  - 172.16.16.16/32
+  publicKey: VFH3aQQ/X63aR3B+w0gCSxDyuXeAU2YQqbrbrM>
+  persistentKeepalive: 10
+---
+apiVersion: kilo.squat.ai/v1alpha1
+kind: Peer
+metadata:
+  name: bat
+spec:
+  allowedIPs:
+  - 172.16.16.32/32
+  publicKey: qDVFBCM88Zey2PFeyOI0BFf+H1gJJYSqmEqVOC>
+  persistentKeepalive: 10
+---
+apiVersion: kilo.squat.ai/v1alpha1
+kind: Peer
+metadata:
+  name: mac
+spec:
+  allowedIPs:
+  - 172.16.16.48/32
+  publicKey: kWuKpyGVgf5saFJcBBraYByzEXnfL/z/LDiiN1>
+  persistentKeepalive: 10
