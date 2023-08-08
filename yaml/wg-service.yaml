@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kilo
+  namespace: kube-system
+spec:
+  selector:
+    app.kubernetes.io/name: kilo
+    app.kubernetes.io/part-of: kilo
+  ports:
+    - name: wireguard-tcp
+      port: 51820
+      targetPort: 51820
+      protocol: TCP
