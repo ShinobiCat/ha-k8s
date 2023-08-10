@@ -5,7 +5,7 @@ metadata:
   name: WGPK1
 spec:
   allowedIPs:
-  - 172.16.16.16/32
+  - $WGIP1
   publicKey: $WGPK1
   persistentKeepalive: 10
 ---
@@ -15,7 +15,7 @@ metadata:
   name: WGPK2
 spec:
   allowedIPs:
-  - 172.16.16.32/32
+  - $WGIP2
   publicKey: $WGPK2
   persistentKeepalive: 10
 ---
@@ -25,6 +25,6 @@ metadata:
   name: WGPK3
 spec:
   allowedIPs:
-  - 172.16.16.48/32
+  - $WGIP3
   publicKey: $WGPK3
   persistentKeepalive: 10
