@@ -2,29 +2,29 @@
 apiVersion: kilo.squat.ai/v1alpha1
 kind: Peer
 metadata:
-  name: WGPK1
+  name: wgpk1
 spec:
   allowedIPs:
-  - $WGIP1
-  publicKey: $WGPK1
+  - $wgip1
+  publicKey: $wgpk1
   persistentKeepalive: 10
 ---
 apiVersion: kilo.squat.ai/v1alpha1
 kind: Peer
 metadata:
-  name: WGPK2
+  name: wgpk2
 spec:
   allowedIPs:
-  - $WGIP2
-  publicKey: $WGPK2
+  - $wgip2
+  publicKey: $wgpk2
   persistentKeepalive: 10
 ---
 apiVersion: kilo.squat.ai/v1alpha1
 kind: Peer
 metadata:
-  name: WGPK3
+  name: wgpk3
 spec:
   allowedIPs:
-  - $WGIP3
-  publicKey: $WGPK3
+  - $wgip3
+  publicKey: $wgpk3
   persistentKeepalive: 10
