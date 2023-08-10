@@ -2,29 +2,29 @@
 apiVersion: kilo.squat.ai/v1alpha1
 kind: Peer
 metadata:
-  name: yan
+  name: WGPK1
 spec:
   allowedIPs:
   - 172.16.16.16/32
-  publicKey: VFH3aQQ/X63aR3B+w0gCSxDyuXeAU2YQqbrbrMnAC14=
+  publicKey: $WGPK1
   persistentKeepalive: 10
 ---
 apiVersion: kilo.squat.ai/v1alpha1
 kind: Peer
 metadata:
-  name: bat
+  name: WGPK2
 spec:
   allowedIPs:
   - 172.16.16.32/32
-  publicKey: qDVFBCM88Zey2PFeyOI0BFf+H1gJJYSqmEqVOCI/PnE=
+  publicKey: $WGPK2
   persistentKeepalive: 10
 ---
 apiVersion: kilo.squat.ai/v1alpha1
 kind: Peer
 metadata:
-  name: mac
+  name: WGPK3
 spec:
   allowedIPs:
   - 172.16.16.48/32
-  publicKey: kWuKpyGVgf5saFJcBBraYByzEXnfL/z/LDiiN1Jrp3A=
+  publicKey: $WGPK3
   persistentKeepalive: 10
