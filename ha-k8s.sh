@@ -171,3 +171,153 @@ sudo kubeadm init --control-plane-endpoint $LB01 --pod-network-cidr=$PODNW --upl
 echo "Switching user and displaying Kubernetes nodes and pods..."
 sudo su $MYUSR -c "kubectl get nodes"
 sudo su $MYUSR -c "kubectl get pods --all-namespaces"
+
+# Apply  kubernetes configuration to MASTER node
+RETRY_FILE="/tmp/k8s_retry_point"
+RETRY_COUNT_FILE="/tmp/k8s_retry_count"
+current_ip=$(hostname -I | awk '{print $1}')
+
+apply_config() {
+    config_url=$1
+    echo "Applying $config_url..."
+
+    kubectl apply -f $config_url
+    if [ $? -ne 0 ]; then
+        echo "Failed to apply $config_url."
+
+        # Increment retry count
+        if [[ -f $RETRY_COUNT_FILE ]]; then
+            retries=$(cat $RETRY_COUNT_FILE)
+            retries=$((retries+1))
+            echo $retries > $RETRY_COUNT_FILE
+        else
+            echo 1 > $RETRY_COUNT_FILE
+            retries=1
+        fi
+
+        # Check if max retries have been reached
+        if [[ $retries -ge 3 ]]; then
+            echo "Maximum retries reached. Aborting."
+            exit 1
+        else
+            echo "Retrying in 3 minutes..."
+            echo "$config_url" > $RETRY_FILE
+            sleep 180
+            exec $0  # Restart the script
+        fi
+    else
+        # If the command is successful, remove the retry point and reset the retry count
+        if [[ -f $RETRY_FILE && $(cat $RETRY_FILE) == $config_url ]]; then
+            rm $RETRY_FILE
+            rm $RETRY_COUNT_FILE
+        fi
+    fi
+}
+
+# If the validation passes:
+if [[ "$(hostname)" == "$CTRL01" && "$CTRL01" == "$MASTER" && "$current_ip" == "$CTRL01IP" ]]; then
+    echo "Applying Kubernetes configurations..."
+
+    if [[ ! -f $RETRY_FILE || $(cat $RETRY_FILE) == "https://raw.githubusercontent.com/ShinobiCat/ha-k8s/main/yaml/kubeadm-flannel.yaml" ]]; then
+        apply_config "https://raw.githubusercontent.com/ShinobiCat/ha-k8s/main/yaml/kubeadm-flannel.yaml"
+    fi
+
+    if [[ ! -f $RETRY_FILE || $(cat $RETRY_FILE) == "https://raw.githubusercontent.com/ShinobiCat/ha-k8s/main/yaml/crds.yaml" ]]; then
+        apply_config "https://raw.githubusercontent.com/ShinobiCat/ha-k8s/main/yaml/crds.yaml"
+    fi
+
+    if [[ ! -f $RETRY_FILE || $(cat $RETRY_FILE) == "https://raw.githubusercontent.com/ShinobiCat/ha-k8s/main/yaml/kilo-kubeadm-flannel.yaml" ]]; then
+        apply_config "https://raw.githubusercontent.com/ShinobiCat/ha-k8s/main/yaml/kilo-kubeadm-flannel.yaml"
+    fi
+
+    if [[ ! -f $RETRY_FILE || $(cat $RETRY_FILE) == "https://raw.githubusercontent.com/ShinobiCat/ha-k8s/main/yaml/wg-peers.yaml" ]]; then
+        apply_config "https://raw.githubusercontent.com/ShinobiCat/ha-k8s/main/yaml/wg-peers.yaml"
+    fi
+
+else
+    echo "Validation failed. This host does not match the required criteria, skipping Kubernetes configurations."
+fi
+
+# Remove the RETRY_FILE at the end of the script if it exists
+if [[ -f $RETRY_FILE ]]; then
+    rm $RETRY_FILE
+fi
+
+# Progressbar function
+print_progress() {
+    percent=$1
+    chars=$(($percent/2))
+    printf "\r["
+    for ((i=0; i<$chars; i++)); do
+        printf "#"
+    done
+    for ((i=$chars; i<50; i++)); do
+        printf "."
+    done
+    printf "] $percent%%"
+}
+
+echo "Extracting necessary parameters for kubeadm join..."
+print_progress 10
+sleep 2
+
+TOKEN=$(kubeadm token create)
+DISCOVERY_TOKEN_CA_CERT_HASH=$(openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //')
+CERTIFICATE_KEY=$(kubeadm init phase upload-certs --upload-certs | tail -1)
+print_progress 30
+
+# Node join function and health check
+join_node() {
+    node_type=$1
+    node_name=$2
+
+    if [[ "$node_type" == "control-plane" ]]; then
+        echo "\nJoining control plane node: $node_name"
+        print_progress 50
+        ssh $node_name "kubeadm join --control-plane --token $TOKEN --discovery-token-ca-cert-hash $DISCOVERY_TOKEN_CA_CERT_HASH --certificate-key $CERTIFICATE_KEY"
+    elif [[ "$node_type" == "worker" ]]; then
+        echo "\nJoining worker node: $node_name"
+        print_progress 70
+        ssh $node_name "kubeadm join --token $TOKEN --discovery-token-ca-cert-hash $DISCOVERY_TOKEN_CA_CERT_HASH"
+    else
+        echo "Unknown node type: $node_type"
+        exit 1
+    fi
+
+    # Check for success of join command
+    if [ $? -ne 0 ]; then
+        echo "Failed to join node: $node_name. Running kubeadm reset on the node and aborting."
+        ssh $node_name "kubeadm reset -f"
+        exit 1
+    fi
+
+    # Retry-loop to validate if the node has joined successfully and is in Ready state (retries=20  # 15 seconds * 20 = 5 minutes)
+    while [[ $retries -gt 0 ]]; do
+        NODE_STATUS=$(kubectl get nodes $node_name --no-headers | awk '{print $2}')
+        if [[ "$NODE_STATUS" == "Ready" ]]; then
+            echo "\nNode $node_name has joined successfully."
+            return
+        else
+            echo "Waiting for node $node_name to become Ready. Retries left: $retries"
+            sleep 15
+            retries=$((retries-1))
+        fi
+    done
+
+    echo "Node $node_name hasn't joined successfully within the expected time. Status is $NODE_STATUS. Running kubeadm reset on the node and aborting."
+    ssh $node_name "kubeadm reset -f"
+    exit 1
+}
+
+# Control Plane nodes
+for node in $CTRL01 $CTRL02 $CTRL03; do
+    join_node "control-plane" $node
+done
+
+# Worker nodes
+for node in $NODE01 $NODE02 $NODE03; do
+    join_node "worker" $node
+done
+
+print_progress 100
+echo "\nAll nodes have been processed!"
